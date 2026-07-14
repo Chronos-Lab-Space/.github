@@ -254,4 +254,4 @@ MIT © 2026 Chronos Lab. See [LICENSE](./LICENSE).
 - Website: [chronoslab.space](https://chronoslab.space)
 - X: [@chronoslabspace](https://x.com/chronoslabspace)
 - Telegram: [join group](https://t.me/+I9MN0GfvgwllZGRh)
-- GitHub: [ChronosLab-Space](https://github.com/ChronosLab-Space)
+- GitHub: [Chronos-Lab-Space](https://github.com/Chronos-Lab-Space))
