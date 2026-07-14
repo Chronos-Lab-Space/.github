@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/30011333/README.md)
 
 # Chronos Lab
 
