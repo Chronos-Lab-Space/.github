@@ -1,248 +1,256 @@
 # Chronos Lab
 
-[![Chronos Lab](https://img.shields.io/badge/Chronos-Lab-c6f0ff?style=flat-square)](https://chronoslab.space)
+[![Chronos Lab](https://img.shields.io/badge/Chronos-Lab-60899b?style=flat-square)](https://chronoslab.space)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
-**The temporal compute layer for autonomous systems.**
+**Decision intelligence that explores multiple futures before you commit.**
 
-Chronos gives agents the ability to branch, evaluate, and collapse millions of possible futures in milliseconds — so they can make decisions the way humans do: by thinking first.
+Chronos is a temporal compute platform: it plans work, simulates possible strategies, evaluates trade-offs, and ranks the strongest path — for people and autonomous agents.
 
-🌐 **Production**: [chronoslab.space](https://chronoslab.space)
+🌐 **Live**: [chronoslab.space](https://chronoslab.space)
+
+<p align="center">
+  <a href="https://chronoslab.space">
+    <img
+      src="docs/images/chronos-home.png"
+      alt="Chronos Lab homepage — temporal decision tree hero"
+      width="960"
+    />
+  </a>
+</p>
+
+Link previews (X, Slack, iMessage, LinkedIn) use the Open Graph card at  
+`https://chronoslab.space/og-image.png` (`public/og-image.png`).
 
 ---
 
 ## What is Chronos?
 
-Today's agents are reactive. They take an input, produce an output, and hope it's right. Chronos introduces **temporal computation** — computing over possible futures before acting.
+Most AI returns a single answer. Chronos returns a **decision**:
 
-A robot using Chronos can simulate:
+```text
+Goal → Gather context → Generate futures → Evaluate trade-offs
+    → Rank outcomes → Recommend the best path
+```
 
-- *What if I move my arm this way?*
-- *What if the object slips?*
-- *What if a human enters?*
-- *What if the environment changes?*
+Use it when the cost of a wrong path is high — product launches, capital allocation, research strategy, or agent planning that must think before it acts.
 
-Then it acts — with certainty. This is closer to how humans operate. We mentally simulate consequences. We imagine futures. We choose the best one.
+### Product surfaces
 
-## The stack
+| Surface | What it is |
+|--------|------------|
+| **Public site** | Marketing, simulator, docs, FAQ |
+| **Private workspace** | Goals, knowledge library, simulations, timeline, memory |
+| **Docs** | Product documentation (`/docs`, page header: Cerebrum) |
 
-| Layer | Tech |
-|---|---|
-| Frontend | React 18, Vite, Tailwind CSS, TypeScript |
-| Backend | Supabase (Postgres + RLS + Auth) |
-| Domain | [chronoslab.space](https://chronoslab.space) |
-| Deployment | Vercel / Netlify (single-page HTML bundle) |
+---
 
 ## Quick start
 
 ```bash
 # Clone
-git clone https://github.com/ChronosLab-Space/chronos-lab.git
-cd chronos-lab
+git clone https://github.com/Chronos-Lab-Space/Chronos.git
+cd Chronos
 
 # Install
 npm install
 
-# Configure
-cp .env.example .env
-# Fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-
-# Run Supabase schema (run once in your Supabase SQL editor)
-# See supabase/schema.sql
+# Local Supabase (Docker) — applies migrations under supabase/migrations/
+npm run supabase:start
+npm run supabase:env    # writes .env with local URL + anon key
 
 # Dev
 npm run dev
 
-# Build
+# Unit tests
+npm run test:unit
+
+# Production build (includes GH Pages 404 fallback)
 npm run build
 ```
 
-## Supabase setup
+Open [http://localhost:5173](http://localhost:5173).
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Run `supabase/schema.sql` in the SQL editor
-3. Copy the project URL and anon key to `.env`
-4. Enable Row-Level Security on `access_requests` and `events` tables
+### Local Supabase
 
-The schema creates:
+| Command | Purpose |
+|---------|---------|
+| `npm run supabase:start` | Start local stack (lean defaults for smaller machines) |
+| `npm run supabase:start:full` | Full stack including Studio / analytics |
+| `npm run supabase:env` | Write `.env` from `supabase status` |
+| `npm run supabase:status` | URLs, keys, DB connection |
+| `npm run supabase:reset` | Re-run migrations + seed |
+| `npm run supabase:stop` | Stop containers (keeps data volume) |
 
-- `access_requests` — stores email submissions from the Request Access form
-- `events` — lightweight analytics event log
+- API: `http://127.0.0.1:54321` · DB: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- Mailpit (auth emails): `http://127.0.0.1:54324`
+- Auth redirects are configured for Vite at port **5173** in `supabase/config.toml`
+- Project is prepared to link remote **Chronos Lab** (`gkyhqnjgwxlyzptpiiob`) via `npx supabase link` after `supabase login`
 
-Both tables are open for anonymous insert only. No client-side read/write.
+To point the SPA at a **hosted** project instead: copy [`.env.example`](./.env.example) → `.env` and set Dashboard API URL + anon/publishable key.
 
-`access_requests` also stores the required qualification context submitted by
-each requester: email, name or organization, what they are building with AI
-agents, and why temporal simulation matters for that workload.
+### Environment
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon / publishable key (browser) |
+| `VITE_SENTRY_DSN` | Optional — client error monitoring (production) |
+| `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_SECRET_KEY` | Server / `@supabase/server` (never `VITE_` for secret) |
+
+See [`.env.example`](./.env.example).
+
+### Production ops (public beta)
+
+```bash
+# 1) Apply SQL (Dashboard → SQL Editor)
+#    - supabase/migrations/* (through public_beta_auth)
+#    - supabase/repair_workspace_grants.sql  (authenticated grants)
+
+# 2) Hosting env (Vercel / GH Pages build)
+#    VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SENTRY_DSN
+
+# 3) Auth → URL config: https://chronoslab.space/auth/callback
+#    Providers: Google + GitHub enabled
+
+# 4) If keys were ever pasted in chat or committed: rotate publishable + secret
+#    in Supabase → Settings → API, then update hosting env.
+```
+
+---
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| UI | React 19, Vite 7, Tailwind CSS 4, TypeScript |
+| Routing | React Router 7 (BrowserRouter) |
+| Backend | Supabase (Auth, Postgres, RLS, Edge Functions) |
+| Server SDK | `@supabase/server` (Edge Function auth + clients) |
+| Tests | Vitest, Testing Library, Playwright |
+| Deploy | Static SPA (Vercel / GitHub Pages) |
+
+---
 
 ## Project structure
 
-```
+```text
 src/
-├── domain/          # Chronos entities, agents, language, simulations
-├── application/     # fork / evaluate / collapse use cases
-├── infrastructure/  # repositories/, auth/, storage/, queries/, Supabase bootstrap
-├── presentation/    # React components, pages, router composition
-├── main.tsx         # Browser bootstrap
-└── index.css        # Tailwind + custom animations
+├── domain/           # Pure models: Chronos engine, workspace types, gates
+├── application/      # Use cases: planner, simulation engine, workspace service
+├── infrastructure/   # Supabase, auth, local store, caches, repositories
+├── presentation/     # React app, marketing pages, workspace UI
+│   ├── components/   # Site shell, docs, FAQ, changelog
+│   └── features/     # Workspace, knowledge, simulation, memory, planner
+├── main.tsx
+└── index.css
 supabase/
-└── schema.sql       # Database schema + RLS policies
+├── migrations/       # Schema evolution (workspaces, sims, versioning, …)
+└── schema.sql        # Bootstrap reference (keep aligned with migrations)
 ```
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the layer responsibilities and
-dependency rules.
+Architecture rules: [ARCHITECTURE.md](./ARCHITECTURE.md)  
+Performance notes: [PERFORMANCE.md](./PERFORMANCE.md)  
+Testing strategy: [TESTING.md](./TESTING.md)  
+Agent skills / lifecycle: [AGENTS.md](./AGENTS.md)
 
-See [PERFORMANCE.md](./PERFORMANCE.md) for virtualization, lazy-loading, and
-simulation-cache rules.
+### AI agent skills
 
-### Repository adapters
+This repo vendors [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (24 lifecycle skills) plus Supabase skills under [`.agents/skills/`](./.agents/skills/). Slash commands: `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship`, `/webperf`.
 
-Chronos persistence is defined by domain ports (`SimulationRepository`,
-`AgentRepository`, `MemoryRepository`, `ScenarioRepository`) and can be backed
-by interchangeable `MemoryRepository`, `SQLiteRepository`, or
-`SupabaseRepository` implementations. See `ARCHITECTURE.md` for details.
+```bash
+npx skills experimental_install   # restore from skills-lock.json
+npx skills update -p -y           # refresh project skills
+```
 
-## Routes
+---
+
+## Key routes
 
 | Path | Description |
-|---|---|
-| `/` | Landing page |
-| `/core` | Brief landing for the Core product |
-| `/dashboard` | Full interactive dashboard |
-| `/simulate` | Startup simulator demo |
-| `/platform` | Architecture + primitives |
-| `/docs` | Full documentation |
-| `/developers` | SDK + CLI + API |
-| `/about` | Company |
-| `/contact` | X + Telegram + email |
-| `/privacy` | Privacy policy |
-| `/terms` | Terms of service |
-| `/security` | Security information |
+|------|-------------|
+| `/` | Landing — hero, live demo, product story |
+| `/simulate` | Public startup simulator (~1,000 futures) |
+| `/docs` | Documentation (Cerebrum header) |
+| `/faq` | Short product FAQ |
+| `/changelog` | Ship notes |
+| `/login` | Auth (magic link / password) |
+| `/workspace` | Private HQ (auth required) |
+| `/workspace/knowledge` | Knowledge Library |
+| `/workspace/simulations` | Run & review simulations |
+| `/workspace/memory` | Versioned decision history |
+| `/platform` · `/roadmap` · `/about` | Product & company |
 
-## The Chronos language
+Legacy `/dashboard` redirects to `/workspace`.
 
-A domain-specific language for describing futures. Any agent can write Chronos:
+---
 
-```chronos
-state {
-  agent.runway = 12
-  agent.mrr = 180
-  context.board = "watching"
-}
-
-action "Raise Series A" {
-  agent.runway = 24
-  context.board = "hands-off"
-  risk = 0.4
-  reward = 0.82
-}
-
-score growth(state) {
-  base = state.reward - state.risk
-  if state.context.board == "watching" {
-    base = base - 0.1
-  }
-  return clamp(base, 0, 1)
-}
-
-run {
-  fork
-  evaluate with growth
-  collapse max-utility
-}
-```
-
-## Target AI Service Topology
+## Workspace loop (public beta)
 
 ```text
-Planner Agent → Scenario Generator → Branch Generator → Simulation Runtime
-      → Outcome Evaluator → Ranking Engine → Memory
+Sign in → Create workspace → Set goal → Upload knowledge
+       → Run simulation → Review report & timeline → Re-run / memory
 ```
 
-Each stage becomes an independently deployable service as the runtime scales.
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for service responsibilities,
-repository boundaries, and dependency rules.
+Persistence is **local-first with cloud dual-write**:
 
-## Agent Operating System
+- `localStorage` for instant resume  
+- Supabase for durable multi-session memory when authenticated  
+- Load **merges** remote + local simulation history and **backfills** empty cloud from local  
+
+---
+
+## Public simulator
+
+The home live demo and `/simulate` share `publicStartupSimulator`:
+
+1. Decompose the objective into a **task graph**  
+2. Simulate ranked go-to-market paths  
+3. Collapse to best path + alternatives (ARR, probability, roadmap)  
+
+Deterministic for a given prompt (cacheable).
+
+---
+
+## Scripts
+
+```bash
+npm run dev        # Vite dev server
+npm run build      # Production bundle + 404.html for SPA hosts
+npm run preview    # Preview production build
+npm run test:unit  # Vitest
+npm run test:e2e   # Playwright (install browsers first)
+```
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+---
+
+## Temporal engine (core idea)
 
 ```text
-Planner → Task Graph → Scheduler → Execution Runtime
-        → Memory → Evaluation → Timeline Ranking
+Timeline → Branch → Evaluate → Prune → Collapse → Memory
 ```
 
-Chronos executes tasks, not named agents. External providers register
-capabilities for task kinds such as planning, scenario generation, simulation,
-evaluation, ranking, and memory. This lets a capability be supplied by an LLM,
-tool server, human approval workflow, or deterministic service without changing
-the Temporal Engine.
+Chronos executes **tasks and capabilities**, not fixed agent personas. Planners build dependency graphs; the runtime forks futures, scores them, and keeps lineage for audit and re-runs.
 
-### Automatic planning
-
-For example, an objective like `Launch startup` becomes a task graph:
+Agent OS sketch:
 
 ```text
-Research competitors → Estimate market → Build roadmap
-                     → Predict adoption → Financial simulation → Risk analysis
+Planner → Task Graph → Scheduler → Execution
+        → Memory → Evaluation → Timeline ranking
 ```
 
-Chronos resolves registered capabilities for those tasks. The user never picks
-an individual agent.
-
-## Temporal Versioning
-
-```text
-Timeline → Branch → Subbranch → Merge → Collapse
-```
-
-Every decision creates replayable branches. Compatible branches can merge
-evidence before ranking; collapse selects a canonical path while preserving the
-discarded futures for audit and replay.
-
-## Temporal Compute Platform
-
-```text
-SDK → API → CLI → Visual Studio Extension → Agent Runtime → Simulation Cloud
-```
-
-The same Chronos program can be authored in the editor, executed through the
-CLI or SDK, submitted through the API, and observed or replayed in Simulation
-Cloud. Every surface uses the same run, branch, timeline, and memory contract.
-
-## Workspace Intelligence
-
-```text
-Workspace → Knowledge Graph → Past Simulations
-          → Successful Futures → Failure Patterns → Next planning cycle
-```
-
-Chronos turns completed simulations into evidence. Validated futures become
-reusable strategies; recurring failure patterns become constraints. This gives
-the next decision cycle stronger priors without changing the deterministic
-execution of an individual run.
-
-The dashboard exposes this loop through the **Workspace Intelligence** tab,
-where successful paths are promoted to evidence and recurring failure signals
-become proposed constraints for future task planning.
+---
 
 ## Contributing
 
-This repo is a **public-facing marketing + docs site** for Chronos Lab. The core engine lives in a private repo.
+This repository is the **public product surface** for Chronos Lab (site, workspace UI, docs, simulator). Bug reports and suggestions are welcome via GitHub Issues.
 
-Bug reports and suggestions welcome via GitHub Issues.
-
-## Testing
-
-Chronos treats simulation correctness as product correctness. The repository
-includes unit tests for the engine, integration tests for language-to-simulation
-flows, timeline snapshots, and Playwright end-to-end workflows.
-
-```bash
-npx vitest run
-npx playwright install chromium
-npx playwright test
-```
-
-See [TESTING.md](./TESTING.md) for the full testing strategy and coverage rules.
+---
 
 ## License
 
@@ -250,7 +258,8 @@ MIT © 2026 Chronos Lab. See [LICENSE](./LICENSE).
 
 ## Links
 
-- Website: [chronoslab.space](https://chronoslab.space)
-- X: [@chronoslabspace](https://x.com/chronoslabspace)
-- Telegram: [join group](https://t.me/+I9MN0GfvgwllZGRh)
-- GitHub: [ChronosLab-Space](https://github.com/ChronosLab-Space)
+- Website: [chronoslab.space](https://chronoslab.space)  
+- Docs: [chronoslab.space/docs](https://chronoslab.space/docs)  
+- X: [@chronoslabspace](https://x.com/chronoslabspace)  
+- Telegram: [join group](https://t.me/+I9MN0GfvgwllZGRh)  
+- GitHub: [Chronos-Lab-Space/Chronos](https://github.com/Chronos-Lab-Space/Chronos)
